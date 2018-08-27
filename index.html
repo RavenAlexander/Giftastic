@@ -7,86 +7,166 @@
 </head>
 
 <body>
-  <div class="container" id="buttonList">
-      
-  </div>
+    <style>
+    #addSearch, button {
+        background-color: lightseagreen;
+        color: white;
+    }    
+    body {
+        background-color:lightgray;
+    }    
+    </style>
+  <div id="buttonsArea">
+ </div>
     
-    <div class="container" md-6 float="right">
-            <form id="animal-form">
-                      <label for="add">Add an animal here:</label>
-                      <input type="text" class="form-control" id="addAnimal2" placeholder="sea sponge">
-   
-                    <input id="addAnimal" type="submit" value="Submit">
+    
+            <form id="search-form" float="right">
+                      <label for="add"><h4>Add an animal here:</h4></label>
+                      <input type="text" id="search-input" placeholder="sea sponge">
+                        <br>
+                    <input type="submit" id="addSearch" value="Submit">
                 </form>
                   
-    </div>
+    
 
-  <div id="images" float="left">
+  <div id="searches"> Click on a button to get started!
   </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
   
   <script type="text/javascript">
+  
+    $(function(){
+        populateButtons(searchArray, 'searchButton', '#buttonsArea');
+        console.log("Page Loaded");
+    })
 
-  //Creates list of animal buttons
-    var animalButtons = ["Monkey, Sea Sponge, Lion, Cat, Dog"];
-        for (var i=0; i < animalButtons.length; i++) {
-            var aButton = $('<input type="button"' + animalButtons[i] + '/>');
-    //$(aButton).append(animalButtons[i]);
-    $("#buttonList").append(aButton);
+    var searchArray = ['Dog', 'Cat', 'Bird', 'Manatee', 'Squirrel', 'Koala', 'Butterfly', 'Horse', 'Zebra', 'Turtle', 'Giraffe', 'Dolphin', 'Fish'];
+
+    function populateButtons(searchArray, classToAdd, areaToAddTo){
+        $(areaToAddTo).empty();
+        for (var i=0; i < searchArray.length; i++){
+            var a = $('<button>');
+                a.addClass(classToAdd);
+                a.attr('data-type', searchArray[i]);
+                a.text(searchArray[i]);
+                $(areaToAddTo).append(a);
         }
+    }
+    $(document).on('click', '.searchButton', function(){
+        $('#searches').empty();
+        var type = $(this).data('type');
+        var queryURL = 'https://api.giphy.com/v1/gifs/search?q=' + type +'&api_key=dc6zaTOxFJmzC&limit=10'
+        $.ajax({url:queryURL,method: 'GET'})
+        .done(function(response){
+            console.log(response);
+            for (var i =0; i < response.data.length; i++) {
+                var searchDiv = $('<div class="search-item">');
+                    var rating = response.data[i].rating;
+                    var p = $('<p>').text('Rating: ' + rating);
+                    var animated = response.data[i].images.fixed_height.url;
+                    var still = response.data[i].images.fixed_height_still.url;
+                    var image = $('<img>');
+                    image.attr('src', still);
+                    image.attr('data-still', still);
+                    image.attr('data-animated', animated);
+                    image.attr('data-state', 'still');
+                    image.addClass('searchImage');
+                    searchDiv.append(p);
+                    searchDiv.append(image);
+                    $('#searches').append(searchDiv);
+            }
+        })
     
-    //Displays the GIFs when a button is clicked
-    $(":button").on("click", function() {
-      var animal = $(this).attr("data-animal");
-      var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
-        animal + "&api_key=dc6zaTOxFJmzC&limit=10";
+    });
 
-    
-      $.ajax({
-          url: queryURL,
-          method: "GET"
-      })
-        .then(function(response) {
-            var results = response.data;
-
-        for (var i = 0; i < results.length; i++) {
-        var gifDiv = $("<div class='item'>");
-
-        var rating = results[i].rating;
-
-        var p = $("<p>").text("Rating: " + rating);
-
-        var gifImage = $("<img>")
-        
-        gifImage.attr("src", results[i].images.fixed_height.url);
-
-        gifDiv.prepend(p);
-        gifDiv.prepend(gifImage);
-
-        $("#images").prepend(gifDiv);
-        }
-        });
-
-        //Adds a new button to the list of buttons
-        $("#addAnimal").on("click", function () {
-         
-            var newButton = $('<input type="button" value="new button"/>').attr("data-animal");
-
-            $("#buttonList").push(newButton);
-        });
-        // GIF animation
-        $(".gif").on("click", function() {
-            var state = $(gifImage).attr("data-state");
-        console.log(state)
-        if (state === "still") {
-          $(gifImage).attr('src', $(gifImage).attr("data-animate"));
-          $(gifImage).attr("data-state", "animate");
+    $(document).on('click', '.searchImage', function(){
+        var state= $(this).attr('data-state');
+        if (state === 'still') {
+            $(this).attr('src', $(this).data('animated'));
+            $(this).attr('data-state', 'animated');
         } else {
-          $(gifImage).attr("src", $(gifImage).attr("data-still"));
-          $(gifImage).attr("data-state", "still");
+            $(this).attr('src',$(this).data('still'));
+            $(this).attr('data-state', 'still');
         }
-    });   
+    });
+
+$('#addSearch').on('click', function(){
+    var newSearch = $('input').eq(0).val();
+    searchArray.push(newSearch);
+    populateButtons(searchArray,'searchButton', '#buttonsArea');
+    return false;
+
 });
+
+
+
+
+
+
+//<--This was my attempt of the code, before I watched the video walkthrough.-->
+//   //Creates list of animal buttons
+//     var animalButtons = ["Monkey", "Sea Sponge", "Lion", "Cat", "Dog"];
+//         for (var i=0; i < animalButtons.length; i++) {
+//             var aButton = $('<input type="button"' + animalButtons[i] + '/>');
+//     //$(aButton).append(animalButtons[i]);
+//     $("#buttonList").append(aButton);
+//         }
+    
+//     //Displays the GIFs when a button is clicked
+//     $(":button").on("click", function() {
+//       var animal = $(this).attr("data-animal");
+//       //find a way to say "If text is entered into the Submit field, 
+//       //take that entry and append it to animal var"
+//       var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+//         animal + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+    
+//       $.ajax({
+//           url: queryURL,
+//           method: "GET"
+//       })
+//         .then(function(response) {
+//             var results = response.data;
+
+//         for (var i = 0; i < results.length; i++) {
+//         var gifDiv = $("<div class='item'>");
+
+//         var rating = results[i].rating;
+
+//         var p = $("<p>").text("Rating: " + rating);
+
+//         var gifImage = $("<img>")
+        
+//         gifImage.attr("src", results[i].images.fixed_height.url);
+
+//         gifDiv.prepend(p);
+//         gifDiv.prepend(gifImage);
+
+//         $("#images").prepend(gifDiv);
+//         }
+//         });
+
+//         //Adds a new button to the list of buttons
+//         $("#addAnimal").on("click", function () {
+         
+//             var newButton = $('<input type="button" value="new button"/>').attr("data-animal");
+
+//             $("#buttonList").push(newButton);
+//         });
+//         // GIF animation
+//         $(".gif").on("click", function() {
+//             var state = $(gifImage).attr("data-state");
+//         console.log(state)
+//         if (state === "still") {
+//           $(gifImage).attr('src', $(gifImage).attr("data-animate"));
+//           $(gifImage).attr("data-state", "animate");
+//         } else {
+//           $(gifImage).attr("src", $(gifImage).attr("data-still"));
+//           $(gifImage).attr("data-state", "still");
+//         }
+//     });   
+// });
 
 
   </script>
